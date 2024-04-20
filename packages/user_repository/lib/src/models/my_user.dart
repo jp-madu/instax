@@ -53,8 +53,13 @@ class MyUser extends Equatable {
     );
   }
 
-  static MyUser fromEntity(MyUserEntity entity){
-    return MyUser(id: id, email: email, name: name, picture: picture,)
+  static fromEntity(MyUserEntity entity) {
+    return MyUser(
+      id: entity.id,
+      email: entity.email,
+      name: entity.name,
+      picture: entity.picture,
+    );
   }
 
   @override

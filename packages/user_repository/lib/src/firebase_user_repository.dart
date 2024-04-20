@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:user_repository/src/models/my_user.dart';
 import 'package:user_repository/src/user_repo.dart';
@@ -7,41 +10,70 @@ class FirebaseUserRepository implements UserRepository {
     FirebaseAuth? firebaseAuth,
   }) : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
   final FirebaseAuth _firebaseAuth;
+  final usersCollection = FirebaseFirestore.instance.collection('users');
 
   @override
-  Future<void> signIn(String email, String password) {
-    // TODO: implement signIn
-    throw UnimplementedError();
+  Future<void> signIn(String email, String password) async {
+    try {
+      await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
   }
 
   @override
-  Future<MyUser> signUp(MyUser myUser, String password) {
-    // TODO: implement signUp
-    throw UnimplementedError();
+  Future<MyUser> signUp(MyUser myUser, String password) async {
+    try {
+      UserCredential user = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: myUser.email,
+        password: password,
+      );
+
+      myUser = myUser.copyWith(id: user.user!.uid);
+      return myUser;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  // @override
+  // Future<MyUser> getMyUser(String myUserId) {}
+
+  @override
+  Future<void> logOut() async {
+    try {
+      await _firebaseAuth.signOut();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
   }
 
   @override
-  Future<MyUser> getMyUser(String myUserId) {
-    // TODO: implement getMyUser
-    throw UnimplementedError();
+  Future<void> resetPassword(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(
+        email: email,
+      );
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
   }
 
   @override
-  Future<void> logOut() {
-    // TODO: implement logOut
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> resetPassword(String email) {
-    // TODO: implement resetPassword
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> setUserData(MyUser user) {
-    // TODO: implement setUserData
-    throw UnimplementedError();
+  Future<void> setUserData(MyUser user) async {
+    try {
+      await usersCollection.doc(user.id).set(user.toEntity().toDocument());
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
   }
 
   //Sign In
